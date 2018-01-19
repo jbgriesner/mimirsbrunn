@@ -278,16 +278,13 @@ pub struct Admin {
             deserialize_with = "custom_multi_polygon_deserialize",
             skip_serializing_if = "Option::is_none", default)]
     pub boundary: Option<geo::MultiPolygon<f64>>,
-    pub Type: AdminType,
+    pub admin_type: AdminType,
 }
 
 impl Admin {
     pub fn is_city(&self) -> bool {
-        match *self {
-            Admin {
-                Type: AdminType::City,
-                ..
-            } => true,
+        match self.admin_type {
+            AdminType::City => true,
             _ => false,
         }
     }
@@ -295,10 +292,9 @@ impl Admin {
 
 impl fmt::Display for Admin {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.is_city() {
-            write!(f, "{:?}", AdminType::City)
-        } else {
-            write!(f, "{:?}", AdminType::Unknown)
+        match self.admin_type {
+            AdminType::City => write!(f, "city"),
+            AdminType::Unknown => write!(f, "unknown"),
         }
     }
 }

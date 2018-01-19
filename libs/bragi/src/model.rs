@@ -128,7 +128,7 @@ impl From<mimir::Place> for Feature {
 
 impl From<mimir::Admin> for GeocodingResponse {
     fn from(other: mimir::Admin) -> GeocodingResponse {
-        let type_ = Some(other.to_string());
+        let type_ = other.to_string();
         let name = Some(other.name);
         let insee = Some(other.insee);
         let level = Some(other.level); //might be used for type_ and become useless

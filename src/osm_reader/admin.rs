@@ -150,7 +150,7 @@ pub fn administrative_regions(
                 .map(|s| s.to_string())
                 .sorted();
             let boundary = build_boundary(relation, &objects);
-            let Type = if level == city_level {
+            let admin_type = if level == city_level {
                 mimir::AdminType::City
             } else {
                 mimir::AdminType::Unknown
@@ -165,7 +165,7 @@ pub fn administrative_regions(
                 weight: Cell::new(0.),
                 coord: coord_center.unwrap_or_else(|| make_centroid(&boundary)),
                 boundary: boundary,
-                Type: Type,
+                admin_type: admin_type,
             };
             administrative_regions.push(admin);
         }
