@@ -151,6 +151,9 @@ struct Args {
     /// Name of the dataset.
     #[structopt(short = "d", long = "dataset", default_value = "fr")]
     dataset: String,
+    // City level to  calculate weight.
+    #[structopt(short = "C", long = "city-level", default_value = "8")]
+    city_level: u32,
 }
 
 fn main() {
