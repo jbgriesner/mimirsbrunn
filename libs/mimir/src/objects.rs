@@ -259,6 +259,12 @@ impl Members for Stop {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum AdminType {
+    City,
+    Unknown,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Admin {
     pub id: String,
     pub insee: String,
@@ -272,6 +278,29 @@ pub struct Admin {
             deserialize_with = "custom_multi_polygon_deserialize",
             skip_serializing_if = "Option::is_none", default)]
     pub boundary: Option<geo::MultiPolygon<f64>>,
+    pub Type: AdminType,
+}
+
+impl Admin {
+    pub fn is_city(&self) -> bool {
+        match *self {
+            Admin {
+                Type: AdminType::City,
+                ..
+            } => true,
+            _ => false,
+        }
+    }
+}
+
+impl fmt::Display for Admin {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.is_city() {
+            write!(f, "{:?}", AdminType::City)
+        } else {
+            write!(f, "{:?}", AdminType::Unknown)
+        }
+    }
 }
 
 fn custom_multi_polygon_serialize<S>(
