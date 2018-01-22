@@ -72,7 +72,6 @@ pub fn bragi_three_cities_test(es_wrapper: ::ElasticSearchWrapper) {
     three_cities_zip_code_test(&bragi);
     three_cities_zip_code_address_test(&bragi);
     three_cities_shape_test(&bragi);
-    three_cities_is_admin(&bragi);
 }
 
 fn three_cities_housenumber_zip_code_test(bragi: &BragiHandler) {
