@@ -161,9 +161,6 @@ fn main() {
     info!("importing open addresses into Mimir");
 
     let args = Args::from_args();
-    if args.city_level.is_some() {
-        warn!("city-level option is deprecated, it now has no effect.");
-    }
 
     let file_path = Path::new(&args.input);
     if file_path.is_dir() {

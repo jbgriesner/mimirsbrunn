@@ -290,9 +290,9 @@ impl Admin {
     }
 }
 
-impl fmt::Display for Admin {
+impl fmt::Display for AdminType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.admin_type {
+        match *self {
             AdminType::City => write!(f, "city"),
             AdminType::Unknown => write!(f, "unknown"),
         }
