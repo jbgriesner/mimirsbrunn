@@ -62,8 +62,7 @@ pub fn osm2mimir_sample_test(es_wrapper: ::ElasticSearchWrapper) {
             .all(|a| a.boundary.clone().map_or(false, |b| !b.0.is_empty()))
     };
     // Admins have boundaries
-    assert!(has_boundary(&res, true));
-
+    assert!(has_boundary(&res, true));    
     // Others places than Admin don't
     assert!(!has_boundary(&res, false));
 

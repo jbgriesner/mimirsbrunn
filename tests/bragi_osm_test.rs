@@ -36,6 +36,7 @@ use super::get_values;
 use super::get_value;
 use super::get_types;
 use super::count_types;
+use super::filter_by_type;
 
 pub fn bragi_osm_test(es_wrapper: ::ElasticSearchWrapper) {
     let bragi = BragiHandler::new(format!("{}/munin", es_wrapper.host()));
@@ -58,6 +59,7 @@ pub fn bragi_osm_test(es_wrapper: ::ElasticSearchWrapper) {
     zip_code_test(&bragi);
     zip_code_street_test(&bragi);
     zip_code_admin_test(&bragi);
+    city_admin_test(&bragi);
 }
 
 fn zip_code_test(bragi: &BragiHandler) {
@@ -118,7 +120,18 @@ fn zip_code_admin_test(bragi: &BragiHandler) {
     assert_eq!(count, 1);
     let first_city = all_20.iter().find(|e| get_value(e, "type") == "city");
     assert_eq!(get_value(first_city.unwrap(), "citycode"), "77487");
-
+    
     let count = count_types(&types, "house");
-    assert_eq!(count, 0);
+    assert_eq!(count, 0);       
+}
+
+fn city_admin_test(bragi: &BragiHandler) {
+    let all_melun = bragi.get("/autocomplete?q=Melun Rp");
+    let cities_all_melun = filter_by_type(&all_melun, "city");
+    let types = get_types(&cities_all_melun);
+    assert!(
+        types
+            .iter()
+            .all(|r| *r == "city",)
+    );
 }

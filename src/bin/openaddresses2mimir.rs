@@ -152,8 +152,8 @@ struct Args {
     #[structopt(short = "d", long = "dataset", default_value = "fr")]
     dataset: String,
     /// Deprecated option.
-    #[structopt(short = "C", long = "city-level", default_value = "8")]
-    city_level: Option<u32>,
+    #[structopt(short = "C", long = "city-level")]
+    city_level: Option<String>,
 }
 
 fn main() {

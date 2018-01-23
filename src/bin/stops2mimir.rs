@@ -63,8 +63,8 @@ struct Args {
                 default_value = "http://localhost:9200/munin")]
     connection_string: String,
     /// Deprecated option.
-    #[structopt(short = "C", long = "city-level", default_value = "8")]
-    city_level: Option<u32>,
+    #[structopt(short = "C", long = "city-level")]
+    city_level: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -149,7 +149,7 @@ fn main() {
     if args.city_level.is_some() {
         warn!("city-level option is deprecated, it now has no effect.");
     }
-    
+
     let mut rdr = csv::Reader::from_path(args.input).unwrap();
     let mut nb_stop_points = HashMap::new();
     let mut stops: Vec<mimir::Stop> = rdr.deserialize()

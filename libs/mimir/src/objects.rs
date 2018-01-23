@@ -264,6 +264,15 @@ pub enum AdminType {
     Unknown,
 }
 
+impl fmt::Display for AdminType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            AdminType::City => write!(f, "city"),
+            AdminType::Unknown => write!(f, "unknown"),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Admin {
     pub id: String,
@@ -286,15 +295,6 @@ impl Admin {
         match self.admin_type {
             AdminType::City => true,
             _ => false,
-        }
-    }
-}
-
-impl fmt::Display for AdminType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            AdminType::City => write!(f, "city"),
-            AdminType::Unknown => write!(f, "unknown"),
         }
     }
 }

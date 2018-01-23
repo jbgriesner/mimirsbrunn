@@ -56,8 +56,8 @@ struct Args {
                 default_value = "http://localhost:9200/munin")]
     connection_string: String,
     /// Deprecated option.
-    #[structopt(short = "C", long = "city-level", default_value = "8")]
-    city_level: Option<u32>,
+    #[structopt(short = "C", long = "city-level")]
+    city_level: Option<String>,
 }
 
 fn to_mimir(
@@ -103,7 +103,7 @@ fn main() {
     if args.city_level.is_some() {
         warn!("city-level option is deprecated, it now has no effect.");
     }
-    
+
     let navitia = navitia_model::ntfs::read(&args.input);
     let nb_stop_points = navitia
         .stop_areas
