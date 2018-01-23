@@ -103,7 +103,7 @@ fn main() {
     if args.city_level.is_some() {
         warn!("city-level option is deprecated, it now has no effect.");
     }
-
+    
     let navitia = navitia_model::ntfs::read(&args.input);
     let nb_stop_points = navitia
         .stop_areas
