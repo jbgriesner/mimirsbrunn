@@ -287,7 +287,12 @@ pub struct Admin {
             deserialize_with = "custom_multi_polygon_deserialize",
             skip_serializing_if = "Option::is_none", default)]
     pub boundary: Option<geo::MultiPolygon<f64>>,
+    #[serde(default = "default_admin_city")]
     pub admin_type: AdminType,
+}
+
+fn default_admin_city() -> AdminType {
+    AdminType::City
 }
 
 impl Admin {
