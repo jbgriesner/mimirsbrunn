@@ -277,6 +277,7 @@ fn query(
                 .map(|index| index.as_str())
                 .collect::<Vec<&str>>())
             .with_query(&query)
+            .with_search_type("dfs_query_then_fetch")
             .with_from(offset)
             .with_size(limit)
             .send()
