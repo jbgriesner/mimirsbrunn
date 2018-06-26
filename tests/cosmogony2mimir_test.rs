@@ -28,6 +28,9 @@
 // https://groups.google.com/d/forum/navitia
 // www.navitia.io
 
+extern crate iron_test;
+use super::BragiHandler;
+use super::{count_types, get_types};
 use cosmogony::ZoneType;
 use mimir;
 use std::f64;
@@ -48,7 +51,11 @@ pub fn cosmogony2mimir_test(es_wrapper: ::ElasticSearchWrapper) {
 
     // All results should be admins, and have some basic information
     let all_objects: Vec<_> = es_wrapper.search_and_filter("*.*", |_| true).collect();
+<<<<<<< 074b34be5e84cead6f81e336823756dd1b509234
     assert_eq!(all_objects.len(), 7);
+=======
+    assert_eq!(all_objects.len(), 9);
+>>>>>>> add zone_type + tests
 
     assert!(all_objects.iter().any(|r| r.is_admin()));
     // all cosmogony admins have boundaries
@@ -145,4 +152,20 @@ pub fn cosmogony2mimir_test(es_wrapper: ::ElasticSearchWrapper) {
         }
         _ => panic!("should be an admin"),
     }
+
+    // we test a bragi query without and with zone_type filter
+    let bragi = BragiHandler::new(format!("{}/munin", es_wrapper.host()));
+
+    let response_without_filter = bragi.get("/autocomplete?q=Saint-Martin-d'Hères");
+    let response_with_filter =
+        bragi.get("/autocomplete?q=Saint-Martin-d'Hères&zone_type=state_district");
+
+    let types = get_types(&response_without_filter);
+    let types_filtered = get_types(&response_with_filter);
+
+    assert_eq!(count_types(&types, "city"), 1);
+    assert_eq!(count_types(&types, "state_district"), 1);
+
+    assert_eq!(count_types(&types_filtered, "city"), 0);
+    assert_eq!(count_types(&types_filtered, "state_district"), 1);
 }

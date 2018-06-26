@@ -265,6 +265,7 @@ impl FromStr for Type {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "city" => Ok(Type::City),
+            "zone" => Ok(Type::City),
             "house" => Ok(Type::House),
             "poi" => Ok(Type::Poi),
             "public_transport:stop_area" => Ok(Type::StopArea),

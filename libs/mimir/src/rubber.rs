@@ -114,6 +114,7 @@ pub fn get_indexes_by_type(a_type: &str) -> String {
     let doc_type = match a_type {
         "public_transport:stop_area" => "stop",
         "city" => "admin",
+        "zone" => "admin",
         "house" => "addr",
         _ => a_type,
     };

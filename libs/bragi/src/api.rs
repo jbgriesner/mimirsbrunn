@@ -297,6 +297,11 @@ impl ApiEndPoint {
                         ));
                     }
                     let types = get_param_array(params, "type");
+                    let zone_type = params
+                        .find("zone_type")
+                        .and_then(|val| val.as_str())
+                        .unwrap_or("")
+                        .to_string();
                     let model_autocomplete = query::autocomplete(
                         &q,
                         &pt_datasets,
@@ -307,6 +312,7 @@ impl ApiEndPoint {
                         &cnx,
                         Some(shape),
                         &types,
+                        &zone_type,
                     );
                     let response = model::v1::AutocompleteResponse::from(model_autocomplete);
                     render(client, response)
@@ -351,6 +357,11 @@ impl ApiEndPoint {
                     });
 
                     let types = get_param_array(params, "type");
+                    let zone_type = params
+                        .find("zone_type")
+                        .and_then(|val| val.as_str())
+                        .unwrap_or("")
+                        .to_string();
 
                     let model_autocomplete = query::autocomplete(
                         &q,
@@ -362,6 +373,7 @@ impl ApiEndPoint {
                         &cnx,
                         None,
                         &types,
+                        &zone_type,
                     );
 
                     let response = model::v1::AutocompleteResponse::from(model_autocomplete);
