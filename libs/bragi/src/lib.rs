@@ -54,6 +54,8 @@ extern crate slog_scope;
 #[macro_use]
 extern crate failure;
 
+extern crate cosmogony;
+
 use iron::prelude::Chain;
 use iron::Iron;
 use rustless::Application;

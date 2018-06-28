@@ -93,6 +93,7 @@ pub fn bragi_filter_types_test(es_wrapper: ::ElasticSearchWrapper) {
     street_by_id_test(&bragi);
     stop_by_id_test(&bragi);
     stop_area_that_does_not_exists(&bragi);
+    type_zone_filter(&bragi);
 }
 
 fn no_type_no_dataset_test(bragi: &BragiHandler) {
@@ -234,4 +235,17 @@ fn stop_area_invalid_index(bragi: &BragiHandler) {
 
     let result_body = iron_test::response::extract_body_to_string(response);
     assert!(result_body.contains("Impossible to find object"));
+}
+
+fn type_zone_filter(bragi: &BragiHandler) {
+    // This query without the 'type=zone' filter returns cities and pois.
+    // With the filter we should have only cities.
+    let response_zone = bragi.get("/autocomplete?q=melun&type=zone");
+    let types_zone = get_types(&response_zone);
+
+    assert_eq!(count_types(&types_zone, "public_transport:stop_area"), 0);
+    assert_eq!(count_types(&types_zone, "street"), 0);
+    assert_eq!(count_types(&types_zone, "house"), 0);
+    assert!(count_types(&types_zone, "city") > 0);
+    assert_eq!(count_types(&types_zone, "poi"), 0);
 }

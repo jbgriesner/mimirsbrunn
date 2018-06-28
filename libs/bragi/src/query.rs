@@ -132,7 +132,7 @@ fn build_query(
     shape: Option<Vec<rs_es::units::Location>>,
     pt_datasets: &[&str],
     all_data: bool,
-    zone_type: &str,
+    zone_type: &Option<&str>,
 ) -> Query {
     use rs_es::query::functions::Function;
 
@@ -221,13 +221,12 @@ fn build_query(
 
     let mut filters = vec![house_number_condition, matching_condition];
 
-    // filter by zone_type
-    let zone_type_condition = Query::build_bool()
-        .with_should(Query::build_term("zone_type", zone_type.to_string()).build())
-        .build();
-
-    // if the user query contains the 'zone_type' parameter, we add a filter_condition
-    if !zone_type.is_empty() {
+    // filter by zone_type: if the user query contains
+    // the 'zone_type' parameter, we add a filter_condition
+    if let Some(zt) = zone_type {
+        let zone_type_condition = Query::build_bool()
+            .with_should(Query::build_term("zone_type", zt.to_string()).build())
+            .build();
         filters.push(zone_type_condition)
     }
 
@@ -257,7 +256,7 @@ fn query(
     coord: &Option<model::Coord>,
     shape: Option<Vec<rs_es::units::Location>>,
     types: &[&str],
-    zone_type: &str,
+    zone_type: &Option<&str>,
 ) -> Result<Vec<mimir::Place>, EsError> {
     let query_type = match_type.to_string();
     let query = build_query(
@@ -365,7 +364,7 @@ pub fn autocomplete(
     cnx: &str,
     shape: Option<Vec<(f64, f64)>>,
     types: &[&str],
-    zone_type: &str,
+    zone_type: &Option<&str>,
 ) -> Result<Vec<mimir::Place>, BragiError> {
     fn make_shape(shape: &Option<Vec<(f64, f64)>>) -> Option<Vec<rs_es::units::Location>> {
         shape
@@ -386,7 +385,7 @@ pub fn autocomplete(
         &coord,
         make_shape(&shape),
         &types,
-        &zone_type,
+        zone_type,
     ).map_err(model::BragiError::from)?;
     if results.is_empty() {
         query(
@@ -400,7 +399,7 @@ pub fn autocomplete(
             &coord,
             make_shape(&shape),
             &types,
-            &zone_type,
+            zone_type,
         ).map_err(model::BragiError::from)
     } else {
         Ok(results)

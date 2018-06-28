@@ -35,7 +35,8 @@ use mimir::rubber::Rubber;
 use model;
 use model::v1::*;
 use params::{
-    coord_param, dataset_param, get_param_array, paginate_param, shape_param, types_param,
+    coord_param, dataset_param, get_param_array, get_zone_type, paginate_param, shape_param,
+    types_param, zone_type_param,
 };
 use prometheus;
 use prometheus::Encoder;
@@ -261,6 +262,7 @@ impl ApiEndPoint {
                     paginate_param(params);
                     shape_param(params);
                     types_param(params);
+                    zone_type_param(params);
                 });
 
                 let cnx = self.es_cnx_string.clone();
@@ -297,11 +299,8 @@ impl ApiEndPoint {
                         ));
                     }
                     let types = get_param_array(params, "type");
-                    let zone_type = params
-                        .find("zone_type")
-                        .and_then(|val| val.as_str())
-                        .unwrap_or("")
-                        .to_string();
+                    let zone_type = get_zone_type(params, "zone_type");
+
                     let model_autocomplete = query::autocomplete(
                         &q,
                         &pt_datasets,
@@ -325,6 +324,7 @@ impl ApiEndPoint {
                     paginate_param(params);
                     coord_param(params, true);
                     types_param(params);
+                    zone_type_param(params);
                 });
                 let cnx = self.es_cnx_string.clone();
                 endpoint.handle(move |client, params| {
@@ -357,11 +357,7 @@ impl ApiEndPoint {
                     });
 
                     let types = get_param_array(params, "type");
-                    let zone_type = params
-                        .find("zone_type")
-                        .and_then(|val| val.as_str())
-                        .unwrap_or("")
-                        .to_string();
+                    let zone_type = get_zone_type(params, "zone_type");
 
                     let model_autocomplete = query::autocomplete(
                         &q,

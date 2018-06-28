@@ -30,10 +30,11 @@
 
 extern crate iron_test;
 use super::BragiHandler;
-use super::{count_types, get_types};
+use super::{count_types, get_types, to_json};
 use cosmogony::ZoneType;
 use mimir;
 use std::f64;
+use rustless::server::status::StatusCode::{BadRequest, NotFound};
 
 /// load a cosmogony file in mimir.
 /// The cosmogony file has been generated using the osm_fixture.osm.pbf file
@@ -51,11 +52,7 @@ pub fn cosmogony2mimir_test(es_wrapper: ::ElasticSearchWrapper) {
 
     // All results should be admins, and have some basic information
     let all_objects: Vec<_> = es_wrapper.search_and_filter("*.*", |_| true).collect();
-<<<<<<< 074b34be5e84cead6f81e336823756dd1b509234
-    assert_eq!(all_objects.len(), 7);
-=======
     assert_eq!(all_objects.len(), 9);
->>>>>>> add zone_type + tests
 
     assert!(all_objects.iter().any(|r| r.is_admin()));
     // all cosmogony admins have boundaries
@@ -154,18 +151,29 @@ pub fn cosmogony2mimir_test(es_wrapper: ::ElasticSearchWrapper) {
     }
 
     // we test a bragi query without and with zone_type filter
+    // We test below different bragi requests with various parameters:
+    // (i)   with an invalid 'zone_type' filter
+    // (ii)  a standard request that should return 2 zones: 1 city and 1 state_district
+    // (iii) the same request than (ii) but with a filter that should return only 1 zone: 1 state_district
     let bragi = BragiHandler::new(format!("{}/munin", es_wrapper.host()));
 
+    let response_wrong_zone_type =
+        bragi.raw_get("/autocomplete?q=Saint-Martin-d'Hères&zone_type=invalid_zt");
+    assert!(response_wrong_zone_type.is_err());
+    let iron_error = response_wrong_zone_type.unwrap_err();
+    assert_eq!(iron_error.response.status.unwrap(), BadRequest);
+    let json = to_json(iron_error.response);
+    let error_msg = json.pointer("/long").unwrap().as_str().unwrap();
+    assert!(error_msg.contains("invalid_zt does not belong to the valid zone types list: suburb, city, state_district, state, country_region, country, non_admin"));
+
     let response_without_filter = bragi.get("/autocomplete?q=Saint-Martin-d'Hères");
-    let response_with_filter =
+    let types_unfiltered = get_types(&response_without_filter);
+    assert_eq!(count_types(&types_unfiltered, "city"), 1);
+    assert_eq!(count_types(&types_unfiltered, "state_district"), 1);
+
+    let response_with_filter_state_district =
         bragi.get("/autocomplete?q=Saint-Martin-d'Hères&zone_type=state_district");
-
-    let types = get_types(&response_without_filter);
-    let types_filtered = get_types(&response_with_filter);
-
-    assert_eq!(count_types(&types, "city"), 1);
-    assert_eq!(count_types(&types, "state_district"), 1);
-
+    let types_filtered = get_types(&response_with_filter_state_district);
     assert_eq!(count_types(&types_filtered, "city"), 0);
     assert_eq!(count_types(&types_filtered, "state_district"), 1);
 }

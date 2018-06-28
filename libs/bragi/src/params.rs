@@ -28,7 +28,9 @@
 // https://groups.google.com/d/forum/navitia
 // www.navitia.io
 
+use cosmogony::ZoneType;
 use rustless::json::JsonValue;
+use std::fmt;
 use std::str::FromStr;
 use valico::common::error as valico_error;
 use valico::json_dsl::{self, Builder, Param};
@@ -38,6 +40,16 @@ const MIN_LAT: f64 = -180f64;
 
 const MAX_LON: f64 = 90f64;
 const MIN_LON: f64 = -90f64;
+
+static ZONE_TYPES: &'static [&str] = &[
+    "suburb",
+    "city",
+    "state_district",
+    "state",
+    "country_region",
+    "country",
+    "non_admin",
+];
 
 pub fn dataset_param(params: &mut Builder) {
     params.opt("pt_dataset", |t| {
@@ -136,12 +148,31 @@ pub fn types_param(params: &mut Builder) {
     });
 }
 
+pub fn zone_type_param(params: &mut Builder) {
+    params.opt("zone_type", |t| {
+        t.coerce(json_dsl::string());
+        t.validate_with(|val, path| check_zone_type(val.as_str().unwrap(), path));
+    });
+}
+
 pub fn get_param_array<'a>(params: &'a JsonValue, param_name: &str) -> Vec<&'a str> {
     params
         .find(param_name)
         .and_then(|val| val.as_array())
         .map(|val| val.iter().map(|val| val.as_str().unwrap()).collect())
         .unwrap_or(vec![])
+}
+
+pub fn get_zone_type<'a>(params: &'a JsonValue, param_name: &str) -> Option<&'a str> {
+    let zt = params
+        .find("zone_type")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+    if zt.is_empty() {
+        None
+    } else {
+        Some(zt)
+    }
 }
 
 fn check_bound(
@@ -176,6 +207,16 @@ fn check_type(types: &[JsonValue], path: &str) -> Result<(), valico_error::Valic
     }
 
     Ok(())
+}
+
+fn check_zone_type(zone_type: &str, path: &str) -> Result<(), valico_error::ValicoErrors> {
+    match is_valid(zone_type) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(vec![Box::new(json_dsl::errors::WrongValue {
+            path: path.to_string(),
+            detail: Some(e),
+        })]),
+    }
 }
 
 fn check_coordinates(
@@ -253,7 +294,7 @@ fn check_coordinates(
 
 #[derive(Copy, Clone, Debug)]
 enum Type {
-    City,
+    Zone,
     House,
     Poi,
     StopArea,
@@ -264,13 +305,26 @@ impl FromStr for Type {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "city" => Ok(Type::City),
-            "zone" => Ok(Type::City),
+            "city" => Ok(Type::Zone),
+            "zone" => Ok(Type::Zone),
             "house" => Ok(Type::House),
             "poi" => Ok(Type::Poi),
             "public_transport:stop_area" => Ok(Type::StopArea),
             "street" => Ok(Type::Street),
             _ => Err(format!("{} is not a valid type", s)),
         }
+    }
+}
+
+type Err = String;
+fn is_valid(s: &str) -> Result<(), Err> {
+    if ZONE_TYPES.contains(&s) {
+        Ok(())
+    } else {
+        Err(format!(
+            "{} does not belong to the valid zone types list: {}",
+            s,
+            ZONE_TYPES.join(", ")
+        ))
     }
 }
