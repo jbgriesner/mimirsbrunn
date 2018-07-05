@@ -299,7 +299,7 @@ impl ApiEndPoint {
                         ));
                     }
                     let types = get_param_array(params, "type");
-                    let zone_type = get_zone_type(params, "zone_type");
+                    let zone_type = get_zone_type(params);
 
                     let model_autocomplete = query::autocomplete(
                         &q,
@@ -357,7 +357,7 @@ impl ApiEndPoint {
                     });
 
                     let types = get_param_array(params, "type");
-                    let zone_type = get_zone_type(params, "zone_type");
+                    let zone_type = get_zone_type(params);
 
                     let model_autocomplete = query::autocomplete(
                         &q,

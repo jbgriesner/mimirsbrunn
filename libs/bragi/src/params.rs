@@ -28,9 +28,7 @@
 // https://groups.google.com/d/forum/navitia
 // www.navitia.io
 
-use cosmogony::ZoneType;
 use rustless::json::JsonValue;
-use std::fmt;
 use std::str::FromStr;
 use valico::common::error as valico_error;
 use valico::json_dsl::{self, Builder, Param};
@@ -163,7 +161,7 @@ pub fn get_param_array<'a>(params: &'a JsonValue, param_name: &str) -> Vec<&'a s
         .unwrap_or(vec![])
 }
 
-pub fn get_zone_type<'a>(params: &'a JsonValue, param_name: &str) -> Option<&'a str> {
+pub fn get_zone_type<'a>(params: &'a JsonValue) -> Option<&'a str> {
     let zt = params
         .find("zone_type")
         .and_then(|v| v.as_str())
@@ -210,6 +208,18 @@ fn check_type(types: &[JsonValue], path: &str) -> Result<(), valico_error::Valic
 }
 
 fn check_zone_type(zone_type: &str, path: &str) -> Result<(), valico_error::ValicoErrors> {
+    type Err = String;
+    fn is_valid(s: &str) -> Result<(), Err> {
+        if ZONE_TYPES.contains(&s) {
+            Ok(())
+        } else {
+            Err(format!(
+                "{} does not belong to the valid zone types list: {}",
+                s,
+                ZONE_TYPES.join(", ")
+            ))
+        }
+    }
     match is_valid(zone_type) {
         Ok(_) => Ok(()),
         Err(e) => Err(vec![Box::new(json_dsl::errors::WrongValue {
@@ -313,18 +323,5 @@ impl FromStr for Type {
             "street" => Ok(Type::Street),
             _ => Err(format!("{} is not a valid type", s)),
         }
-    }
-}
-
-type Err = String;
-fn is_valid(s: &str) -> Result<(), Err> {
-    if ZONE_TYPES.contains(&s) {
-        Ok(())
-    } else {
-        Err(format!(
-            "{} does not belong to the valid zone types list: {}",
-            s,
-            ZONE_TYPES.join(", ")
-        ))
     }
 }
