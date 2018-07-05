@@ -33,8 +33,8 @@ use super::BragiHandler;
 use super::{count_types, get_types, to_json};
 use cosmogony::ZoneType;
 use mimir;
-use std::f64;
 use rustless::server::status::StatusCode::{BadRequest, NotFound};
+use std::f64;
 
 /// load a cosmogony file in mimir.
 /// The cosmogony file has been generated using the osm_fixture.osm.pbf file
@@ -178,7 +178,6 @@ pub fn cosmogony2mimir_test(es_wrapper: ::ElasticSearchWrapper) {
     assert_eq!(count_types(&types_melun, "country_region"), 0);
     assert_eq!(count_types(&types_melun, "state"), 0);
     assert_eq!(count_types(&types_melun, "state_district"), 0);
-
 
     // (iii)
     let response_melun_state = bragi.get("/autocomplete?q=Melun&zone_type=state_district");
