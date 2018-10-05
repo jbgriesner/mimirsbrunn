@@ -57,6 +57,7 @@ pub fn bragi_bano_test(es_wrapper: ::ElasticSearchWrapper) {
     simple_bano_lon_lat_test(&bragi);
     long_bano_address_test(&bragi);
     reverse_bano_test(&bragi);
+    duplicate_bragi_test(&bragi);
 }
 
 fn status_test(bragi: &BragiHandler) {
@@ -187,5 +188,19 @@ fn reverse_bano_test(bragi: &BragiHandler) {
     assert_eq!(
         get_values(&res, "label"),
         vec!["20 Rue Hector Malot (Paris)"]
+    );
+}
+
+fn duplicate_bragi_test(bragi: &BragiHandler) {
+    //let res = bragi.raw_get("/autocomplete?q=2 rue du doublon paris").unwrap();
+    //let result_body = iron_test::response::extract_body_to_string(res);
+    //info!("\n\n\n {}   \n\n\n\n\n", result_body);
+
+    let res = bragi.get("/autocomplete?q=2 rue du doublon paris");
+    assert_eq!(res.len(), 2);
+    assert_eq!(
+        get_values(&res, "label"),
+        vec!["2 Rue du Doublon (Paris) 75012",
+             "2 Rue du Doublon (Paris)"]
     );
 }

@@ -145,10 +145,10 @@ fn stop_no_admin_test(bragi: &BragiHandler) {
 fn stop_filtered_by_dataset_test(bragi: &BragiHandler) {
     // Search stops on all aliases
     let response = bragi.get("/autocomplete?q=14 juillet&_all_data=true");
-    assert_eq!(response.len(), 2);
+    assert_eq!(response.len(), 1);
 
     let stop = response.first().unwrap();
-    assert_eq!(get_value(stop, "id"), "stop_area:SA:second_station");
+    assert_eq!(get_value(stop, "id"), "stop_area:SA:second_station:dataset2");
 
     let stop = response.last().unwrap();
     assert_eq!(
@@ -324,7 +324,7 @@ fn stop_all_data_test(bragi: &BragiHandler) {
 
     // search wiht _all_data = true
     let response = bragi.get("/autocomplete?q=14 juillet&_all_data=true");
-    assert_eq!(response.len(), 2);
+    assert_eq!(response.len(), 1);
 }
 
 fn stop_order_by_weight_test(bragi: &BragiHandler) {
@@ -361,7 +361,7 @@ fn distance_test(bragi: &BragiHandler) {
             .raw_get("/autocomplete?q=14 juillet&_all_data=true&lat=48.526578&lon=2.679347")
             .unwrap();
         let features = get_results(response, None);
-        assert_eq!(features.len(), 2);
+        assert_eq!(features.len(), 1);
 
         let feature_first = features.first().unwrap();
         assert!(feature_first.contains_key("distance"));
@@ -378,7 +378,7 @@ fn distance_test(bragi: &BragiHandler) {
             .raw_get("/autocomplete?q=14 juillet&_all_data=true")
             .unwrap();
         let features = get_results(response, None);
-        assert_eq!(features.len(), 2);
+        assert_eq!(features.len(), 1);
 
         let feature_first = features.first().unwrap();
         assert!(!feature_first.contains_key("distance"));

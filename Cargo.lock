@@ -133,6 +133,7 @@ dependencies = [
 name = "bragi"
 version = "1.2.0"
 dependencies = [
+ "cosmogony 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "geojson 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",

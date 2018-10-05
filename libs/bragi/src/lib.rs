@@ -69,6 +69,8 @@ extern crate prometheus;
 
 extern crate hyper;
 
+extern crate cosmogony;
+
 pub mod api;
 mod model;
 mod params;

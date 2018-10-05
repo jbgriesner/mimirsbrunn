@@ -57,7 +57,7 @@ pub struct Geocoding {
     query: Option<String>,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Feature {
     #[serde(rename = "type")]
     pub feature_type: String,
@@ -67,12 +67,19 @@ pub struct Feature {
     pub distance: Option<u32>,
 }
 
-#[derive(Serialize, Debug)]
+impl PartialEq for Feature {
+    fn eq(&self, other: &Feature) -> bool {
+        self.properties.geocoding.label == other.properties.geocoding.label &&
+        self.properties.geocoding.name == other.properties.geocoding.name
+    }
+}
+
+#[derive(Serialize, Debug, Clone)]
 pub struct Properties {
     pub geocoding: GeocodingResponse,
 }
 
-#[derive(Serialize, Debug, Default)]
+#[derive(Serialize, Debug, Default, Clone)]
 pub struct GeocodingResponse {
     pub id: String,
     #[serde(rename = "type")]
