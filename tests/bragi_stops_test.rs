@@ -148,7 +148,10 @@ fn stop_filtered_by_dataset_test(bragi: &BragiHandler) {
     assert_eq!(response.len(), 1);
 
     let stop = response.first().unwrap();
-    assert_eq!(get_value(stop, "id"), "stop_area:SA:second_station:dataset2");
+    assert_eq!(
+        get_value(stop, "id"),
+        "stop_area:SA:second_station:dataset2"
+    );
 
     let stop = response.last().unwrap();
     assert_eq!(

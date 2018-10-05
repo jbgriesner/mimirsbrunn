@@ -200,7 +200,6 @@ fn duplicate_bragi_test(bragi: &BragiHandler) {
     assert_eq!(res.len(), 2);
     assert_eq!(
         get_values(&res, "label"),
-        vec!["2 Rue du Doublon (Paris) 75012",
-             "2 Rue du Doublon (Paris)"]
+        vec!["2 Rue du Doublon (Paris) 75012", "2 Rue du Doublon (Paris)"]
     );
 }

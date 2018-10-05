@@ -57,6 +57,16 @@ pub struct Geocoding {
     query: Option<String>,
 }
 
+impl Geocoding {
+    #[allow(dead_code)]
+    pub fn new(v: String, q: Option<String>) -> Geocoding {
+        Geocoding {
+            version: v,
+            query: q,
+        }
+    }
+}
+
 #[derive(Serialize, Debug, Clone)]
 pub struct Feature {
     #[serde(rename = "type")]
@@ -69,8 +79,8 @@ pub struct Feature {
 
 impl PartialEq for Feature {
     fn eq(&self, other: &Feature) -> bool {
-        self.properties.geocoding.label == other.properties.geocoding.label &&
-        self.properties.geocoding.name == other.properties.geocoding.name
+        self.properties.geocoding.label == other.properties.geocoding.label
+            && self.properties.geocoding.name == other.properties.geocoding.name
     }
 }
 

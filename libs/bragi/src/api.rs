@@ -48,13 +48,12 @@ use serde_json;
 use std::time;
 use valico::json_dsl;
 
-use navitia_model::objects::Coord;
-use std::collections::HashMap;
-use std::collections::BTreeMap;
 use cosmogony::ZoneType;
 use mimir;
+use navitia_model::objects::Coord;
+use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
-
 
 const DEFAULT_LIMIT: u64 = 10u64;
 const DEFAULT_OFFSET: u64 = 0u64;
@@ -107,23 +106,39 @@ fn remove_duplicates(response: &mut model::v1::AutocompleteResponse) {
         let old_features = resp.features.clone();
         let mut new_features: Vec<(usize, model::Feature)> = Vec::new();
 
-        let mut features_map: BTreeMap<_, _> = old_features.into_iter().enumerate().map(|(i, f)| (make_key(&f), (i, f))).collect();
-        let mut postcode_map: HashMap<(&Option<String>, &Option<String>), Option<String>> = HashMap::new();
+        let mut features_map: BTreeMap<_, _> = old_features
+            .into_iter()
+            .enumerate()
+            .map(|(i, f)| (make_key(&f), (i, f)))
+            .collect();
+        let mut postcode_map: HashMap<(&Option<String>, &Option<String>), Option<String>> =
+            HashMap::new();
 
         for ((name, label, code, admin), (ref i, ref mut f)) in features_map.iter_mut() {
             if postcode_map.contains_key(&(name, label)) {
                 let temp_code = postcode_map.get(&(name, label)).unwrap().clone();
                 if code == &temp_code {
-                    f.properties.geocoding.label = Some(format!("{} {}", label.clone().unwrap(), admin.clone().unwrap()));
+                    f.properties.geocoding.label = Some(format!(
+                        "{} {}",
+                        label.clone().unwrap(),
+                        admin.clone().unwrap()
+                    ));
                 } else {
-                    f.properties.geocoding.label = Some(format!("{} {}", label.clone().unwrap(), code.clone().unwrap()));
+                    f.properties.geocoding.label = Some(format!(
+                        "{} {}",
+                        label.clone().unwrap(),
+                        code.clone().unwrap()
+                    ));
                 }
             }
             postcode_map.insert((name, label), f.properties.geocoding.postcode.clone());
             new_features.push((*i, f.clone()));
         }
         new_features.sort_by_key(|(i, _f)| i.clone());
-        resp.features = new_features.iter().map(|(_k, f)| f.clone()).collect::<Vec<_>>();
+        resp.features = new_features
+            .iter()
+            .map(|(_k, f)| f.clone())
+            .collect::<Vec<_>>();
     }
 
     fn smallest_admin(admins: &Vec<Arc<mimir::Admin>>) -> Option<String> {
@@ -149,12 +164,19 @@ fn remove_duplicates(response: &mut model::v1::AutocompleteResponse) {
         }
     }
 
-    fn make_key(f: &model::Feature) -> (Option<String>, Option<String>, Option<String>, Option<String>) {
+    fn make_key(
+        f: &model::Feature,
+    ) -> (
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+    ) {
         (
             f.properties.geocoding.name.clone(),
             f.properties.geocoding.label.clone(),
             f.properties.geocoding.postcode.clone(),
-            smallest_admin(&f.properties.geocoding.administrative_regions)
+            smallest_admin(&f.properties.geocoding.administrative_regions),
         )
     }
 }
@@ -489,71 +511,129 @@ impl ApiEndPoint {
     }
 }
 
+#[allow(dead_code)]
+fn get_feature(
+    nme: Option<String>,
+    lbl: Option<String>,
+    cde: Option<String>,
+    adm_name: String,
+    zt_adm: Option<ZoneType>,
+) -> model::Feature {
+    use geojson::{Geometry, Value};
+    model::Feature {
+        feature_type: "Feature_type".to_string(),
+        geometry: Geometry::new(Value::Point(vec![-120.66029, 35.2812])),
+        properties: model::Properties {
+            geocoding: model::GeocodingResponse {
+                name: nme,
+                label: lbl,
+                postcode: cde,
+                administrative_regions: vec![Arc::new(mimir::Admin {
+                    id: "".to_string(),
+                    insee: "".to_string(),
+                    level: 8,
+                    label: "".to_string(),
+                    name: adm_name,
+                    zip_codes: vec![],
+                    weight: 0.0,
+                    coord: mimir::Coord::new(50.0, 50.0),
+                    boundary: None,
+                    bbox: None,
+                    zone_type: zt_adm,
+                    parent_id: None,
+                    codes: vec![mimir::Code {
+                        name: "".to_string(),
+                        value: "".to_string(),
+                    }],
+                })],
+                id: "".to_string(),
+                place_type: "".to_string(),
+                housenumber: None,
+                street: None,
+                city: None,
+                citycode: None,
+                level: None,
+                poi_types: vec![],
+                properties: vec![],
+                address: None,
+                commercial_modes: vec![],
+                comments: vec![],
+                physical_modes: vec![],
+                timezone: None,
+                codes: vec![],
+                feed_publishers: vec![],
+                bbox: None,
+            },
+        },
+        distance: None,
+    }
+}
+
+#[allow(dead_code)]
+fn get_features() -> Vec<model::Feature> {
+    let mut features: Vec<model::Feature> = Vec::new();
+    features.push(get_feature(
+        Some("2 Rue du Doublon".to_string()),
+        Some("2 Rue du Doublon (Paris)".to_string()),
+        Some("75012".to_string()),
+        "".to_string(),
+        Some(ZoneType::City),
+    ));
+
+    // Same feature as above: it's a duplicate that we want to remove
+    features.push(get_feature(
+        Some("2 Rue du Doublon".to_string()),
+        Some("2 Rue du Doublon (Paris)".to_string()),
+        Some("75012".to_string()),
+        "".to_string(),
+        Some(ZoneType::City),
+    ));
+
+    // Same feature as above but with a different postcode: so we keep it
+    features.push(get_feature(
+        Some("2 Rue du Doublon".to_string()),
+        Some("2 Rue du Doublon (Paris)".to_string()),
+        Some("75002".to_string()),
+        "".to_string(),
+        Some(ZoneType::City),
+    ));
+
+    // Same feature as above with the same postcode but with a smallest admin, so we keep it
+    features.push(get_feature(
+        Some("2 Rue du Doublon".to_string()),
+        Some("2 Rue du Doublon (Paris)".to_string()),
+        Some("75002".to_string()),
+        "".to_string(),
+        Some(ZoneType::Suburb),
+    ));
+    features
+}
+
+#[allow(dead_code)]
+fn get_fake_response() -> model::v1::AutocompleteResponse {
+    let autocomplete = model::Autocomplete {
+        format_type: "FeatureCollection".to_string(),
+        geocoding: model::Geocoding::new("0.1.0".to_string(), Some("".to_string())),
+        features: get_features(),
+    };
+    model::v1::AutocompleteResponse::Autocomplete(autocomplete)
+}
 
 #[test]
 fn test_remove_duplicates() {
-    use geojson::{Geometry,Value};
-    let mut features: Vec<model::Feature> = Vec::new();
-    features.push(
-        model::Feature {
-            feature_type: "Feature_type".to_string(),
-            geometry: Geometry::new(Value::Point(vec![-120.66029,35.2812])),
-            properties: model::Properties {
-                geocoding: model::GeocodingResponse{
-                    name: Some("2 Rue du Doublon".to_string()),
-                    label: Some("2 Rue du Doublon (Paris)".to_string()),
-                    postcode: Some("75012".to_string()),
-                    administrative_regions: vec![Arc::new(
-                        mimir::Admin {
-                            id: "".to_string(),
-                            insee: "".to_string(),
-                            level: 8,
-                            label: "".to_string(),
-                            name: "".to_string(),
-                            zip_codes: vec![],
-                            weight: 0.0,
-                            coord: mimir::Coord::new(50.0, 50.0),
-                            boundary: None,
-                            bbox: None,
-                            zone_type: None,
-                            parent_id: None,
-                            codes: vec![mimir::Code{name: "".to_string(), value: "".to_string()}],
-                        }
-                    )],
-                    id: "".to_string(),
-                    place_type: "".to_string(),
-                    housenumber: None,
-                    street: None,
-                    city: None,
-                    citycode: None,
-                    level: None,
-                    poi_types: vec![],
-                    properties: vec![],
-                    address: None,
-                    commercial_modes: vec![],
-                    comments: vec![],
-                    physical_modes: vec![],
-                    timezone: None,
-                    codes: vec![],
-                    feed_publishers: vec![],
-                    bbox: None,
-                },
-            },
-            distance: None,
-        }
-    );
+    // First we create a bragi response with 3 features inside
+    let mut responses = get_fake_response();
 
-    let autocomplete = model::Autocomplete {
-        format_type: "FeatureCollection".to_string(),
-        geocoding: model::Geocoding {
-            version: "0.1.0".to_string(),
-            query: Some("".to_string()),
-        },
-        features: features,
-    };
+    // We check that "responses" contains 4 features at the begining
+    if let model::v1::AutocompleteResponse::Autocomplete(ref resp) = responses {
+        assert_eq!(resp.features.len(), 4);
+    }
 
-    let response = model::v1::AutocompleteResponse::Autocomplete(autocomplete);
+    // We remove the duplicate features from the response
+    remove_duplicates(&mut responses);
 
-    assert!(false);
-
+    // We check that only two features remain
+    if let model::v1::AutocompleteResponse::Autocomplete(resp) = responses {
+        assert_eq!(resp.features.len(), 3);
+    }
 }
