@@ -192,10 +192,6 @@ fn reverse_bano_test(bragi: &BragiHandler) {
 }
 
 fn duplicate_bragi_test(bragi: &BragiHandler) {
-    //let res = bragi.raw_get("/autocomplete?q=2 rue du doublon paris").unwrap();
-    //let result_body = iron_test::response::extract_body_to_string(res);
-    //info!("\n\n\n {}   \n\n\n\n\n", result_body);
-
     let res = bragi.get("/autocomplete?q=2 rue du doublon paris");
     assert_eq!(res.len(), 2);
     assert_eq!(
